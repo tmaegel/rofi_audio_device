@@ -37,7 +37,10 @@ class CmdWrapper:
         finally:
             if proc and proc.returncode > 0:
                 logger.critical(
-                    f"Error while running command '{cmd}' [{proc.returncode}]: {err}"
+                    "Error while running command '%s' [%s]: %s",
+                    cmd,
+                    proc.returncode,
+                    err,
                 )
                 raise RuntimeError(
                     f"Error while running command '{cmd}' [{proc.returncode}]: {err}"
@@ -92,6 +95,8 @@ class PactlWrapper(CmdWrapper):
         for sink in PactlWrapper.list_sinks():
             if card_name in sink["name"]:
                 return sink
+
+        return None
 
     @staticmethod
     def get_card_profiles(card_id: Union[int, str], output=True) -> list[str]:
@@ -202,7 +207,7 @@ class RofiWrapper:
             value = kv[1]
             if key == "card_id":
                 info_dict[key] = int(value)
-            elif key == "type" or key == "card_name":
+            elif key in ("type", "card_name"):
                 info_dict[key] = value
             else:
                 logger.warning("Invalid attribute {key} in ROFI_INFO. Ignored.")
@@ -254,7 +259,7 @@ def main():
                 PactlWrapper.move_sink_inputs(sink["id"])
                 PactlWrapper.sef_default_sink(sink["id"])
             else:
-                logger.warning(f"No suitable sink of card {info['card_id']} found.")
+                logger.warning("No suitable sink of card %s found.", info["card_id"])
                 sys.exit(0)
             rofi.output_card_profiles(card)
         elif info["type"] == "profile":
