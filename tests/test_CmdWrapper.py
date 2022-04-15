@@ -10,7 +10,7 @@ def test_run_cmd__success():
     cmd = ["echo", "-n", "test"]
     out, err, ret = CmdWrapper.run_cmd(cmd)
     assert out == "test"
-    assert err == ""
+    assert err is None
     assert ret == 0
 
 
